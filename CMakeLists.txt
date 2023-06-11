@@ -9,12 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-include_directories(${catkin_INCLUDE_DIRS})
-
-add_executable(wifi_mapper_node src/wifi_mapper.cpp)
-target_link_libraries(wifi_mapper_node ${catkin_LIBRARIES})
-set_target_properties(wifi_mapper_node PROPERTIES OUTPUT_NAME "wifi_mapper_node")
-
 add_message_files(
   FILES
   WifiStrength.msg
@@ -24,6 +18,16 @@ generate_messages(
   DEPENDENCIES
   std_msgs
 )
+
+catkin_package(
+  CATKIN_DEPENDS roscpp rospy rtabmap_ros message_runtime std_msgs
+)
+
+include_directories(${catkin_INCLUDE_DIRS})
+
+add_executable(wifi_mapper_node src/wifi_mapper.cpp)
+target_link_libraries(wifi_mapper_node ${catkin_LIBRARIES})
+set_target_properties(wifi_mapper_node PROPERTIES OUTPUT_NAME "wifi_mapper_node")
 
 catkin_install_python(PROGRAMS
   scripts/wifi_signal_pub.py
