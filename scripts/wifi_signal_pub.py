@@ -36,6 +36,7 @@ def loop():
             user_data_msg = put_into_user_data_msg(nmcli_list);
             wifi_strength_msg = put_into_wifi_strength_msg(ifconfig_list);
 
+            # Publish the msgs
             for_map_publish.publish(user_data_msg)
             raw_publish.publish(wifi_strength_msg)
         

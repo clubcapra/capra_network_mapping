@@ -1,7 +1,3 @@
-// Modified from:
-// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalPubNode.cpp
-// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalSubNode.cpp
-
 /*
 Copyright (c) 2010-2016, Mathieu Labbe - IntRoLab - Universite de Sherbrooke
 All rights reserved.
@@ -28,6 +24,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+// Modified from:
+// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalPubNode.cpp
+// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalSubNode.cpp
+// and made using http://wiki.ros.org/rtabmap_ros/Tutorials/WifiSignalStrengthMappingUserDataUsage
 
 #include <ros/ros.h>
 #include <ros/publisher.h>
@@ -71,6 +72,9 @@ inline int dBm2Quality(int dBm)
   }
 }
 
+/**
+ * @brief Transforms a color in HSV format to a regular RGB format
+ */
 void HSVtoRGB(float* r, float* g, float* b, float h, float s, float v)
 {
   int i;
@@ -126,9 +130,15 @@ ros::Publisher wifiSignalCloudPub;
 std::map<double, int> wifiLevels;
 std::map<double, int> nodeStamps_;
 
+/**
+ * @brief Callback for the map data topic
+ *
+ * @param mapDataMsg a map data message containing the graph generated from the UserData given to the rtabmap node
+ */
 void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
 {
-  ROS_INFO("Received map data!");
+  // Remove for debug purposes
+  // ROS_INFO("Received map data!");
 
   rtabmap::Transform mapToOdom;
   std::map<int, rtabmap::Transform> poses;
@@ -184,7 +194,7 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
 
   if (wifiLevels.size() == 0)
   {
-    ROS_WARN("No wifi signal detected yet in user data of map data");
+    ROS_WARN("wifi_mapper_node: No wifi signal detected yet in user data of map data");
   }
 
   //============================
@@ -205,12 +215,14 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
       max = iter->second;
     }
   }
+
   ROS_INFO("Min/Max dBm = %f %f", min, max);
   if (autoScale && min < 0 && min < max)
   {
     min_dbm = min;
     max_dbm = max;
   }
+
   for (std::map<double, int>::iterator iter = wifiLevels.begin(); iter != wifiLevels.end(); ++iter, ++id)
   {
     // The Wifi value may be taken between two nodes, interpolate its position.
@@ -312,19 +324,22 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "wifi_mapper_node");
 
   ros::NodeHandle nh;
-  ros::NodeHandle pnh("~");
+  ros::NodeHandle pnh("~");  // Private nodehandle makes parameters local to this node.
 
+  // This rate is the same as the rtabmap rate. If put over 1 (if rtabmap's default is changed), the rtabmap launch file
+  // will have to be changed to remove the "async" topic type.
   ros::Rate rate(1);
 
-  pnh.param("hue_symbol", hueSymbol, hueSymbol);
-  pnh.param("min", min_dbm, min_dbm);
-  pnh.param("max", max_dbm, max_dbm);
-  pnh.param("auto", autoScale, autoScale);
+  pnh.param("hue_symbol", hueSymbol,
+            hueSymbol);                // When true, the symbol on the map is a hue of color, otherwise it is a line
+  pnh.param("min", min_dbm, min_dbm);  // Minimal RSSI signal strength in dBm
+  pnh.param("max", max_dbm, max_dbm);  // Maximal RSSI signal strength in dBm
+  pnh.param("auto", autoScale, autoScale);  // Scale the displayed points to the minimal and maximal dBm values received
 
   wifiSignalCloudPub = nh.advertise<sensor_msgs::PointCloud2>("wifi_signal_points", 1);
   ros::Subscriber mapDataSub = nh.subscribe("/rtabmap/mapData", 1, mapDataCallback);
 
-  while(ros::ok())
+  while (ros::ok())
   {
     ros::spinOnce();
     rate.sleep();

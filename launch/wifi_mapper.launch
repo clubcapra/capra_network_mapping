@@ -1,10 +1,16 @@
 <launch>
+    <!-- Launch the wifi signal strength publisher -->
     <node name="wifi_signal_pub" pkg="capra_signal_strength" type="wifi_signal_pub.py" output="screen"/>
 
+    <!-- Launch the wifi mapper node -->
     <node name="wifi_mapper_node" pkg="capra_signal_strength" type="wifi_mapper_node" output="screen">
+        <!-- Scale the displayed points to the minimal and maximal dBm values received while running, overwriting the params -->
         <param name="auto" value="true" />
+        <!-- When true, the symbol on the map is a hue of color, otherwise it is a line -->
         <param name="hue_symbol" value="false" />
+        <!-- Base minimal RSSI signal strength in dBm -->
         <param name="min" value="-100" />
+        <!-- Base maximal RSSI signal strength in dBm -->
         <param name="max" value="-50" />
     </node>
 </launch>
