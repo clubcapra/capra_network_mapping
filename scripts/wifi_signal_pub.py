@@ -20,18 +20,23 @@ def loop():
         nmcli_cmd = os.popen('nmcli dev wifi | grep "^*"').read()
         nmcli_list = nmcli_cmd.split()
         
-        # A roundabout way to get the active interface
-        active_ssid = nmcli_list[1]
-        ssid_cmd = os.popen('iwconfig 2>/dev/null | grep -e ' + active_ssid ).read()
-        active_interface = ssid_cmd.split()[0]
-                
-        # Get signal strength information
-        ifconfig_cmd = os.popen('iwconfig ' + active_interface + ' | grep -e Bit -e Link').read()
-        ifconfig_list = ifconfig_cmd.split()
-        
         if len(nmcli_list) <= 6:
-            rospy.logerr("Cannot get info from wireless!")
+            # Use logger for debug purposes
+            # rospy.logerr("Cannot get info from wireless!")
+            empty_msg = WifiStrength();
+            empty_msg.bit_rate = "No signal"
+            
+            raw_publish.publish(empty_msg)
         else:
+            # A roundabout way to get the active interface
+            active_ssid = nmcli_list[1]
+            ssid_cmd = os.popen('iwconfig 2>/dev/null | grep -e ' + active_ssid ).read()
+            active_interface = ssid_cmd.split()[0]
+                
+            # Get signal strength information
+            ifconfig_cmd = os.popen('iwconfig ' + active_interface + ' | grep -e Bit -e Link').read()
+            ifconfig_list = ifconfig_cmd.split()
+            
             # Call the functions to build the msgs
             user_data_msg = put_into_user_data_msg(nmcli_list);
             wifi_strength_msg = put_into_wifi_strength_msg(ifconfig_list);
