@@ -12,7 +12,7 @@ def loop():
     rospy.init_node('wifi_signal_pub', anonymous=True)
     for_map_publish = rospy.Publisher('wifi_signal', UserData, queue_size=10)
     raw_publish = rospy.Publisher('wifi_signal_raw', WifiStrength, queue_size=10)
-    rate = rospy.Rate(0.5) # 0.5hz
+    rate = rospy.Rate(1) # Atleast as fast as rtabmap
     
     while not rospy.is_shutdown():
         

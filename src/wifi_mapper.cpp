@@ -1,3 +1,7 @@
+// Modified from:
+// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalPubNode.cpp
+// https://github.com/introlab/rtabmap_ros/blob/master/rtabmap_demos/src/WifiSignalSubNode.cpp
+
 /*
 Copyright (c) 2010-2016, Mathieu Labbe - IntRoLab - Universite de Sherbrooke
 All rights reserved.
@@ -7,7 +11,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
+      notice, this list of zconditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
     * Neither the name of the Universite de Sherbrooke nor the
       names of its contributors may be used to endorse or promote products
@@ -310,15 +314,21 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
 
+  ros::Rate rate(1);
+
   pnh.param("hue_symbol", hueSymbol, hueSymbol);
   pnh.param("min", min_dbm, min_dbm);
   pnh.param("max", max_dbm, max_dbm);
   pnh.param("auto", autoScale, autoScale);
 
-  wifiSignalCloudPub = nh.advertise<sensor_msgs::PointCloud2>("wifi_signals", 1);
-  ros::Subscriber mapDataSub = nh.subscribe("/wifi_signal", 1, mapDataCallback);
+  wifiSignalCloudPub = nh.advertise<sensor_msgs::PointCloud2>("wifi_signal_points", 1);
+  ros::Subscriber mapDataSub = nh.subscribe("/rtabmap/mapData", 1, mapDataCallback);
 
-  ros::spin();
+  while(ros::ok())
+  {
+    ros::spinOnce();
+    rate.sleep();
+  }
 
   return 0;
 }

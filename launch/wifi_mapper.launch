@@ -1,5 +1,10 @@
 <launch>
-    <arg name="robot_namespace" default="/capra/signal_strength" />
+    <node name="wifi_signal_pub" pkg="capra_signal_strength" type="wifi_signal_pub.py" output="screen"/>
 
-    <node name="wifi_mapper_node" pkg="capra_signal_strength" type="wifi_mapper_node" ns="$(arg robot_namespace)" output="screen"/>
+    <node name="wifi_mapper_node" pkg="capra_signal_strength" type="wifi_mapper_node" output="screen">
+        <param name="auto" value="true" />
+        <param name="hue_symbol" value="false" />
+        <param name="min" value="-100" />
+        <param name="max" value="-50" />
+    </node>
 </launch>
