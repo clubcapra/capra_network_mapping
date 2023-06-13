@@ -75,7 +75,7 @@ inline int dBm2Quality(int dBm)
 /**
  * @brief Transforms a color in HSV format to a regular RGB format
  */
-void HSVtoRGB(float* r, float* g, float* b, float h, float s, float v)
+void HSVtoRGB(float *r, float *g, float *b, float h, float s, float v)
 {
   int i;
   float f, p, q, t;
@@ -85,44 +85,44 @@ void HSVtoRGB(float* r, float* g, float* b, float h, float s, float v)
     *r = *g = *b = v;
     return;
   }
-  h /= 60;  // sector 0 to 5
+  h /= 60; // sector 0 to 5
   i = floor(h);
-  f = h - i;  // factorial part of h
+  f = h - i; // factorial part of h
   p = v * (1 - s);
   q = v * (1 - s * f);
   t = v * (1 - s * (1 - f));
   switch (i)
   {
-    case 0:
-      *r = v;
-      *g = t;
-      *b = p;
-      break;
-    case 1:
-      *r = q;
-      *g = v;
-      *b = p;
-      break;
-    case 2:
-      *r = p;
-      *g = v;
-      *b = t;
-      break;
-    case 3:
-      *r = p;
-      *g = q;
-      *b = v;
-      break;
-    case 4:
-      *r = t;
-      *g = p;
-      *b = v;
-      break;
-    default:  // case 5:
-      *r = v;
-      *g = p;
-      *b = q;
-      break;
+  case 0:
+    *r = v;
+    *g = t;
+    *b = p;
+    break;
+  case 1:
+    *r = q;
+    *g = v;
+    *b = p;
+    break;
+  case 2:
+    *r = p;
+    *g = v;
+    *b = t;
+    break;
+  case 3:
+    *r = p;
+    *g = q;
+    *b = v;
+    break;
+  case 4:
+    *r = t;
+    *g = p;
+    *b = v;
+    break;
+  default: // case 5:
+    *r = v;
+    *g = p;
+    *b = q;
+    break;
   }
 }
 
@@ -135,7 +135,7 @@ std::map<double, int> nodeStamps_;
  *
  * @param mapDataMsg a map data message containing the graph generated from the UserData given to the rtabmap node
  */
-void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
+void mapDataCallback(const rtabmap_ros::MapDataConstPtr &mapDataMsg)
 {
   // Remove for debug purposes
   // ROS_INFO("Received map data!");
@@ -150,7 +150,7 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
   for (std::map<int, rtabmap::Signature>::iterator iter = signatures.begin(); iter != signatures.end(); ++iter)
   {
     int id = iter->first;
-    rtabmap::Signature& node = iter->second;
+    rtabmap::Signature &node = iter->second;
 
     nodeStamps_.insert(std::make_pair(node.getStamp(), node.id()));
 
@@ -227,12 +227,12 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
   {
     // The Wifi value may be taken between two nodes, interpolate its position.
     double stampWifi = iter->first;
-    std::map<double, int>::iterator previousNode = nodeStamps.lower_bound(stampWifi);  // lower bound of the stamp
+    std::map<double, int>::iterator previousNode = nodeStamps.lower_bound(stampWifi); // lower bound of the stamp
     if (previousNode != nodeStamps.end() && previousNode->first > stampWifi && previousNode != nodeStamps.begin())
     {
       --previousNode;
     }
-    std::map<double, int>::iterator nextNode = nodeStamps.upper_bound(stampWifi);  // upper bound of the stamp
+    std::map<double, int>::iterator nextNode = nodeStamps.upper_bound(stampWifi); // upper bound of the stamp
 
     if (previousNode != nodeStamps.end() && nextNode != nodeStamps.end() && previousNode->second != nextNode->second &&
         uContains(poses, previousNode->second) && uContains(poses, nextNode->second))
@@ -250,7 +250,7 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
       v.y() *= ratio;
       v.z() *= ratio;
 
-      rtabmap::Transform wifiPose = (poseA * v).translation();  // rip off the rotation
+      rtabmap::Transform wifiPose = (poseA * v).translation(); // rip off the rotation
 
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
       if (hueSymbol)
@@ -319,22 +319,22 @@ void mapDataCallback(const rtabmap_ros::MapDataConstPtr& mapDataMsg)
   }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   ros::init(argc, argv, "wifi_mapper_node");
 
   ros::NodeHandle nh;
-  ros::NodeHandle pnh("~");  // Private nodehandle makes parameters local to this node.
+  ros::NodeHandle pnh("~"); // Private nodehandle makes parameters local to this node.
 
   // This rate is the same as the rtabmap rate. If put over 1 (if rtabmap's default is changed), the rtabmap launch file
   // will have to be changed to remove the "async" topic type.
   ros::Rate rate(1);
 
   pnh.param("hue_symbol", hueSymbol,
-            hueSymbol);                // When true, the symbol on the map is a hue of color, otherwise it is a line
-  pnh.param("min", min_dbm, min_dbm);  // Minimal RSSI signal strength in dBm
-  pnh.param("max", max_dbm, max_dbm);  // Maximal RSSI signal strength in dBm
-  pnh.param("auto", autoScale, autoScale);  // Scale the displayed points to the minimal and maximal dBm values received
+            hueSymbol);                    // When true, the symbol on the map is a hue of color, otherwise it is a line
+  pnh.param("min", min_dbm, min_dbm);      // Minimal RSSI signal strength in dBm
+  pnh.param("max", max_dbm, max_dbm);      // Maximal RSSI signal strength in dBm
+  pnh.param("auto", autoScale, autoScale); // Scale the displayed points to the minimal and maximal dBm values received
 
   wifiSignalCloudPub = nh.advertise<sensor_msgs::PointCloud2>("wifi_signal_points", 1);
   ros::Subscriber mapDataSub = nh.subscribe("/rtabmap/mapData", 1, mapDataCallback);
