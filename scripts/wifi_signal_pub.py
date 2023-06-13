@@ -31,15 +31,9 @@ def loop():
 
             raw_publish.publish(empty_msg)
         else:
-            # A roundabout way to get the active interface
-            active_ssid = nmcli_list[1]
-            ssid_cmd = os.popen(
-                'iwconfig 2>/dev/null | grep -e ' + active_ssid).read()
-            active_interface = ssid_cmd.split()[0]
-
             # Get signal strength information
             ifconfig_cmd = os.popen(
-                'iwconfig ' + active_interface + ' | grep -e Bit -e Link').read()
+                'iwconfig wlan1 | grep -e Bit -e Link').read()
             ifconfig_list = ifconfig_cmd.split()
 
             # Call the functions to build the msgs
